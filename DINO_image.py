@@ -1,4 +1,3 @@
-import pyrealsense2 as rs
 import sys
 import numpy as np
 import pickle
@@ -24,7 +23,7 @@ class Dinov2Matcher:
         self.model_name = model_name
         self.smaller_edge_size = smaller_edge_size
         self.patch_size = patch_size
-        self.device = device
+        self.device = device    
 
         self.model = torch.hub.load(repo_or_dir=repo_name, model=model_name).to(self.device)
         self.model.eval()
@@ -115,8 +114,10 @@ def set_camera_view(vis, target_point):
 
 def main(color_buffer):
     # Init Dinov2Matcher
-    # dm = Dinov2Matcher(repo_name='facebookresearch/dinov2', model_name='dinov2_vitb14', patch_size=14, ref_img_name='microwave2.png', ref_patch=(15, 24))
-    dm = Dinov2Matcher(repo_name='facebookresearch/dinov2', model_name='dinov2_vitb14', patch_size=14, ref_img_name='water_bottle.jpeg', ref_patch=(2, 16))
+    dm = Dinov2Matcher(repo_name='facebookresearch/dinov2', model_name='dinov2_vitb14', patch_size=14, ref_img_name='source_lid.jpg', ref_patch=(27, 17))
+    # dm = Dinov2Matcher(repo_name='facebookresearch/dinov2', model_name='dinov2_vitb14', patch_size=14, ref_img_name='source_lid.jpg', ref_patch=(14, 27))
+    # dm = Dinov2Matcher(repo_name='facebookresearch/dinov2', model_name='dinov2_vitb14', patch_size=14, ref_img_name='water_bottle.jpeg', ref_patch=(2, 16))
+    # dm = Dinov2Matcher(repo_name='facebookresearch/dinov2', model_name='dinov2_vitb14', patch_size=14, ref_img_name='water_bottle.jpeg', ref_patch=(2, 16))
     # dm = Dinov2Matcher(repo_name='facebookresearch/dinov2', model_name='dinov2_vitb14', patch_size=14, ref_img_name='water_bottle2.jpg', ref_patch=(18, 15))
     # dm = Dinov2Matcher(repo_name='facebookresearch/dinov2', model_name='dinov2_vitb14', patch_size=14, ref_img_name='cord.jpg', ref_patch=(15, 26))
     # dm = Dinov2Matcher(repo_name='facebookresearch/dinov2', model_name='dinov2_vitb14', patch_size=14, ref_img_name='cord.jpg', ref_patch=(35, 26))
@@ -125,9 +126,12 @@ def main(color_buffer):
     # Load target image
     target_img = cv2.cvtColor(color_buffer, cv2.COLOR_BGR2RGB)
     heatmap_scores, target_heatmap_img, heatmap_img = dm.calculate_heatmap(target_img)
+    print(find_highest_heatmap_point(heatmap_img))
+    plt.imshow(heatmap_img)
+    plt.show()
 
     mask1 = heatmap_img[:, :, 0] < 40
-    mask2 = heatmap_img[:, :, 1] < 250
+    mask2 = heatmap_img[:, :, 1] < 150
     mask3 = heatmap_img[:, :, 2] < 256
     mask = mask1 & mask2 & mask3
 
@@ -154,7 +158,7 @@ def main(color_buffer):
 
 if __name__ == "__main__":
 
-    image = cv2.imread('water_target.jpeg')
+    image = cv2.imread('robot_wrist_cam3.png')
 
     plt.imshow(image)
     plt.show()
